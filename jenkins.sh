@@ -16,3 +16,31 @@ echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
 sudo apt update
 sudo apt install jenkins -y
 
+
+# Install tfsec
+echo "Installing tfsec..."
+curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+# Install checkov
+echo "Installing checkov..."
+sudo apt install python3-pip -y
+sudo apt update -y
+sudo apt install software-properties-common
+sudo python3 -m pip install -U checkov #to install or upgrade checkov)
+echo "Installation completed successfully."
+
+# Install Terraform
+echo "Installing Terraform..."
+sudo apt install unzip -y
+
+# Import HashiCorp GPG key
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+# Add Terraform repository to sources list
+sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+# Update package lists
+sudo apt-get update
+# Get the latest version of Terraform available
+TERRAFORM_LATEST_VERSION=$(apt-cache madison terraform | awk '{print $3}' | sort -V | tail -1)
+echo "Latest Terraform version available: ${TERRAFORM_LATEST_VERSION}"
+# Install the latest version of Terraform
+sudo apt-get install "terraform=${TERRAFORM_LATEST_VERSION}"

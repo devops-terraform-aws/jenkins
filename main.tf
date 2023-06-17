@@ -21,7 +21,7 @@ module "security_group" {
 }
 
 resource "random_id" "name" {
-  byte_length = 4
+  byte_length = 1
 }
 
 resource "null_resource" "generated_key" {

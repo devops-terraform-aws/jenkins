@@ -1,34 +1,34 @@
 module "jenkins" {
-  source          = "./modules/ec2"
+  source          = "git::https://github.com/devops-terraform-aws/ec2-instance-module.git?ref=v1.0.0"
   ami             = data.aws_ami.ubuntu-linux-2004.id
-  key_name        = module.aws_key.export_key_name
+  key_name        = module.aws_key.get_key_name
   instance_type   = var.instance_type
-  tags            = var.tags
-  user_data       = file("${path.module}/jenkins.sh")
-  security_groups = module.security_group.security_group_name
-
-}
-
-module "aws_key" {
-  source   = "./modules/key"
-  key_name = "${var.key_name}-${random_id.name.hex}-key"
+  name            = "jenkins-${var.name}-${module.unique_name.unique}"
+  user_data       = file("${path.module}/scripts/jenkins.sh")
+  security_groups = module.security_group.security_name
+  region          = var.region
 }
 
 module "security_group" {
-  source = "./modules/security"
-  tags   = var.tags
-  name   = "${var.name}-${random_id.name.hex}-security-group"
+  source      = "git::https://github.com/devops-terraform-aws/security-group-module.git?ref=v1.0.0"
+  name        = "${local.name}-${module.unique_name.unique}"
+  cidr_blocks = ["${chomp(data.http.myip.response_body)}/32"]
 }
 
-resource "random_id" "name" {
-  byte_length = 1
+module "unique_name" {
+  source = "git::https://github.com/devops-terraform-aws/random-module.git?ref=v1.0.0"
+}
+
+module "aws_key" {
+  source   = "git::https://github.com/devops-terraform-aws/ssh-key-module.git?ref=v1.0.0"
+  key_name = module.unique_name.unique
 }
 
 resource "null_resource" "generated_key" {
   provisioner "local-exec" {
     command = <<-EOT
-        echo '${module.aws_key.export_private_key}' > ./'${random_id.name.hex}'.pem
-        chmod 400 ./'${random_id.name.hex}'.pem
+        echo '${module.aws_key.private_key}' > ./'${module.unique_name.unique}'.pem
+        chmod 400 ./'${module.unique_name.unique}'.pem
       EOT
   }
 }

@@ -1,7 +1,3 @@
-instance_type = "t2.small"
-tags = {
-  Name = "jenkins"
-}
-key_name = "key"
-name     = "jenkins"
-region   = "us-east-1"
+instance_type = "t2.medium"
+region        = "us-east-1"
+name          = "server"
